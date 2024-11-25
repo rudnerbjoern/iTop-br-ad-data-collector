@@ -30,7 +30,7 @@
 	<pc_defaults>
 		<!--  Default values for iTop PC's object fields -->
 		<org_id>Demo</org_id>
-		<status>active</status>
+		<status>production</status>
 	</pc_defaults>
 
 
