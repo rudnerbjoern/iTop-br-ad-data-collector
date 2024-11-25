@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Default values for parameters. Do NOT alter this file, use params.local.xml instead -->
+<parameters>
+	<!--  NOTE: ldaphost and ldapport are deprecated in favor of ldapuri -->
+	<ldapuri></ldapuri>
+	<ldapdn>DC=company,DC=com</ldapdn>
+	<ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
+	<ldappassword>password</ldappassword>
+
+	<!-- Parameters for PC synchronization -->
+	<ldappcfilter>(&amp;(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))</ldappcfilter>
+	<pc_fields>
+		<!--  Mapping between LDAP fields and iTop PC's object fields -->
+		<primary_key>objectsid</primary_key>
+		<name>name</name>
+		<osfamily_id>operatingsystem</osfamily_id>
+		<osversion_id>operatingsystemversion</osversion_id>
+		<move2production>whencreated</move2production>
+		<!-- TODO: What else?
+		objectGUID?
+		objectSid?
+		  cn
+		  name
+		  dNSHostName
+		  operatingSystem
+		  operatingSystemVersion
+		  whenCreated
+		-->
+	</pc_fields>
+	<pc_defaults>
+		<!--  Default values for iTop PC's object fields -->
+		<org_id>Demo</org_id>
+		<status>active</status>
+	</pc_defaults>
+
+
+	<os_family_mapping type="array">
+		<!-- Syntax /pattern/replacement where:
+      any delimiter can be used (not only /) but the delimiter cannot be present in the "replacement" string
+      pattern is a RegExpr pattern
+      replacement is a sprintf string in which:
+          %1$s will be replaced by the whole matched text,
+          %2$s will be replaced by the first match group, if any group is defined in the RegExpr
+          %3$s will be replaced by the second matched group, etc...
+    -->
+		<pattern>/Microsoft Windows/Windows</pattern>
+		<pattern>/Windows 10 (Pro|Enterprise)/Windows</pattern>
+		<pattern>/Windows 11 (Pro|Enterprise)/Windows</pattern>
+		<pattern>/.*/%1$s</pattern>
+	</os_family_mapping>
+	<os_version_mapping type="array">
+		<!-- Syntax /pattern/replacement where:
+      any delimiter can be used (not only /) but the delimiter cannot be present in the "replacement" string
+      pattern is a RegExpr pattern
+      replacement is a sprintf string in which:
+          %1$s will be replaced by the whole matched text,
+          %2$s will be replaced by the first match group, if any group is defined in the RegExpr
+          %3$s will be replaced by the second matched group, etc...
+    -->
+		<pattern>/10.0 \(19045\)/Windows 10</pattern>
+		<pattern>/10.0 \(22621\)/Windows 11</pattern>
+		<pattern>/10.0 \(22631\)/Windows 11</pattern>
+		<pattern>/.*/%1$s</pattern>
+	</os_version_mapping>
+
+	<!--
+		Set a non empty (and unique) prefix if you run several instances of the collector against the same iTop Server
+		This is the recommended method to collect data from several LDAP servers. (assign a unique prefix to each "source" LDAP server)
+		Note: prefix is defined here since json_placeholders (below) can only reference global parameters
+	-->
+	<prefix></prefix>
+	<json_placeholders>
+		<prefix>$prefix$</prefix>
+		<pcs_data_table>synchro_data_$prefix$ldap_pcs</pcs_data_table>
+		<full_load_interval>604800</full_load_interval>		<!-- 7 days (in seconds): 7*24*60*60 -->
+		<synchro_status>production</synchro_status>
+		<delete_policy>update</delete_policy>
+		<delete_policy_update>status:obsolete</delete_policy_update>
+		<user_delete_policy>administrators</user_delete_policy>
+	</json_placeholders>
+</parameters>
