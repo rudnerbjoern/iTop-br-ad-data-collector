@@ -44,8 +44,9 @@
           %3$s will be replaced by the second matched group, etc...
     -->
 		<pattern>/Microsoft Windows/Windows</pattern>
-		<pattern>/Windows 10 (Pro|Enterprise)/Windows</pattern>
-		<pattern>/Windows 11 (Pro|Enterprise)/Windows</pattern>
+		<pattern>/Windows 7 (Pro|Enterprise|Business)/Windows</pattern>
+		<pattern>/Windows 10 (Pro|Enterprise|Business)/Windows</pattern>
+		<pattern>/Windows 11 (Pro|Enterprise|Business)/Windows</pattern>
 		<pattern>/.*/%1$s</pattern>
 	</os_family_mapping>
 	<os_version_mapping type="array">
@@ -57,9 +58,15 @@
           %2$s will be replaced by the first match group, if any group is defined in the RegExpr
           %3$s will be replaced by the second matched group, etc...
     -->
-		<pattern>/10.0 \(19045\)/Windows 10</pattern>
+		<pattern>/6.1 \(7601\)/Windows 7, Service Pack 1</pattern>
+		<pattern>/10.0 \(14393\)/Windows 10</pattern>
+		<pattern>/10.0 \(17763\)/Windows 10</pattern>
+		<pattern>/10.0 \(18362\)/Windows 10</pattern>
+		<pattern>/10.0 \(18363\)/Windows 10</pattern>
+		<pattern>/10.0 \(19\d+\)/Windows 10</pattern>
 		<pattern>/10.0 \(22621\)/Windows 11</pattern>
 		<pattern>/10.0 \(22631\)/Windows 11</pattern>
+		<pattern>/10.0 \(26100\)/Windows 11</pattern>
 		<pattern>/.*/%1$s</pattern>
 	</os_version_mapping>
 
