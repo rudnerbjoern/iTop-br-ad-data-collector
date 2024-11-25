@@ -1,0 +1,17 @@
+# Ignore VS code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Ignore VS code local history
+.history/
+
+# Ignore temporary data folders
+data/*
+!data/.gitkeep
+
+# Ignore local configuration files
+conf/params.local.xml
