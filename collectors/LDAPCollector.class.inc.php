@@ -116,11 +116,11 @@ TXT
         // Test connection with a bind
         ldap_set_option($this->rConnection, LDAP_OPT_REFERRALS, 0);
         ldap_set_option($this->rConnection, LDAP_OPT_PROTOCOL_VERSION, 3);
-        Utils::Log(LOG_DEBUG, "ldap_bind('{$this->sLogin}', '{$this->sPassword}')...");
+        Utils::Log(LOG_DEBUG, "ldap_bind('{$this->sLogin}', '*****')...");
         $this->bBindSuccess = @ldap_bind($this->rConnection, $this->sLogin, $this->sPassword);
         if ($this->bBindSuccess === false) {
             Utils::Log(LOG_ERR, "ldap_bind to {$this->sURI} failed, check your LDAP connection parameters (<ldapxxx>)!");
-            Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '{$this->sPassword}') FAILED (" . ldap_error($this->rConnection) . ").");
+            Utils::Log(LOG_ERR, "ldap_bind('{$this->sLogin}', '*****') FAILED (" . ldap_error($this->rConnection) . ").");
             return false;
         }
         Utils::Log(LOG_DEBUG, "ldap_bind() Ok.");
