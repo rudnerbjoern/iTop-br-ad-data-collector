@@ -148,6 +148,6 @@ Create a copy as `conf/params.local.xml`.
 
 ## Usage
 
-1. Clone the repository: `git clone https://github.com/your-repo/iTop-br-ad-data-collector.git`
+1. Clone the repository: `git clone https://github.com/rudnerbjoern/iTop-br-ad-data-collector.git`
 2. Create the `conf/params.local.xml` file to match your environment.
 3. Run the collector `php exec.php`
