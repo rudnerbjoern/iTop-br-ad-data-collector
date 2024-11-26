@@ -3,36 +3,35 @@
 <parameters>
 	<!--  NOTE: ldaphost and ldapport are deprecated in favor of ldapuri -->
 	<ldapuri></ldapuri>
-	<ldapdn>DC=company,DC=com</ldapdn>
+	<!--<ldapdn>DC=company,DC=com</ldapdn>-->
 	<ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
 	<ldappassword>password</ldappassword>
+	<page_size>500</page_size>
 
-	<!-- Parameters for PC synchronization -->
-	<ldappcfilter>(&amp;(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))</ldappcfilter>
+
+	<!--  Mapping between LDAP fields and iTop PC's object fields -->
 	<pc_fields>
-		<!--  Mapping between LDAP fields and iTop PC's object fields -->
 		<primary_key>objectsid</primary_key>
 		<name>name</name>
 		<osfamily_id>operatingsystem</osfamily_id>
 		<osversion_id>operatingsystemversion</osversion_id>
 		<move2production>whencreated</move2production>
-		<!-- TODO: What else?
-		objectGUID?
-		objectSid?
-		  cn
-		  name
-		  dNSHostName
-		  operatingSystem
-		  operatingSystemVersion
-		  whenCreated
-		-->
 	</pc_fields>
-	<pc_defaults>
-		<!--  Default values for iTop PC's object fields -->
-		<org_id>Demo</org_id>
-		<status>production</status>
-	</pc_defaults>
 
+	<pc_options type="hash">
+		<!-- Parameters for PC synchronization -->
+		<ldapdn>DC=company,DC=com</ldapdn>
+		<ldapfilter>(&amp;(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))</ldapfilter>
+		<!-- use the value of whenCreated as move2production in iTop -->
+		<synchronize_move2production>yes</synchronize_move2production>
+		<default_org_id>Demo</default_org_id>
+		<default_status>production</default_status>
+	</pc_options>
+
+	<!-- this mapping is applied to the value from distinguishedName to extract the status of the PC-->
+	<status_mapping type="array">
+		<pattern>/.*/production</pattern>
+	</status_mapping>
 
 	<os_family_mapping type="array">
 		<!-- Syntax /pattern/replacement where:
@@ -43,7 +42,9 @@
           %2$s will be replaced by the first match group, if any group is defined in the RegExpr
           %3$s will be replaced by the second matched group, etc...
     -->
+		<pattern>/macOS/MacOS</pattern>
 		<pattern>/Microsoft Windows/Windows</pattern>
+		<pattern>/Windows XP Professional/Windows</pattern>
 		<pattern>/Windows 7 (Pro|Enterprise|Business)/Windows</pattern>
 		<pattern>/Windows 10 (Pro|Enterprise|Business)/Windows</pattern>
 		<pattern>/Windows 11 (Pro|Enterprise|Business)/Windows</pattern>
@@ -58,8 +59,11 @@
           %2$s will be replaced by the first match group, if any group is defined in the RegExpr
           %3$s will be replaced by the second matched group, etc...
     -->
+		<pattern>/5.1 \(2600\)/Windows XP, Service Pack 3</pattern>
 		<pattern>/6.1 \(7601\)/Windows 7, Service Pack 1</pattern>
 		<pattern>/10.0 \(14393\)/Windows 10</pattern>
+		<pattern>/10.0 \(15063\)/Windows 10</pattern>
+		<pattern>/10.0 \(16299\)/Windows 10</pattern>
 		<pattern>/10.0 \(17763\)/Windows 10</pattern>
 		<pattern>/10.0 \(18362\)/Windows 10</pattern>
 		<pattern>/10.0 \(18363\)/Windows 10</pattern>

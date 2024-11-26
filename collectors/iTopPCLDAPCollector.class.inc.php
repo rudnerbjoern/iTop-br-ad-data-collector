@@ -20,11 +20,14 @@ class iTopPCLDAPCollector extends LDAPCollector
      */
     static protected $oOSVersionMappings = null;
 
-
+    /**
+     * @var MappingTable Mapping table for status
+     */
+    static protected $oStatusMappings = null;
 
     protected $sLDAPDN;
     protected $sLDAPFilter;
-    protected $sSynchronizeOrganizations;
+    protected $sSynchronizeMove2Production;
     protected $aPCFields;
     protected $aPCDefaults;
 
@@ -34,12 +37,38 @@ class iTopPCLDAPCollector extends LDAPCollector
     {
         parent::__construct();
         // let's read the configuration parameters
-        $this->sLDAPDN = Utils::GetConfigurationValue('ldapdn', 'DC=company,DC=com');
-        $this->sLDAPFilter = Utils::GetConfigurationValue('ldappcfilter', '(&(objectClass=computer)(objectCategory=computer))');
-        // TODO: Check this setting
-        $this->sSynchronizeOrganizations = Utils::GetConfigurationValue('synchronize_organization', 'no');
-        $this->aPCDefaults = Utils::GetConfigurationValue('pc_defaults', array());
-        $this->aPCFields = Utils::GetConfigurationValue('pc_fields', array('primary_key' => 'samaccountname'));
+        // set the defaults
+        $aLocalPCDefaults = [
+            'synchronize_move2production' => 'no',
+            'default_org_id' => 'Demo',
+            'default_status' => 'production',
+            'ldapdn' => 'DC=company,DC=com',
+            'ldapfilter' => '(&(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))',
+        ];
+        $aPCOptions = Utils::GetConfigurationValue('pc_options', []);
+
+        // Konfigurationswerte abrufen und mit Standardwerten kombinieren
+        $aPCOptions = array_merge($aLocalPCDefaults, $aPCOptions);
+
+        // Attribute direkt setzen
+        $this->sSynchronizeMove2Production = $aPCOptions['synchronize_move2production'];
+        $this->aPCDefaults = [
+            'org_id' => $aPCOptions['default_org_id'],
+            'status' => $aPCOptions['default_status'],
+        ];
+        $this->sLDAPDN = $aPCOptions['ldapdn'];
+        $this->sLDAPFilter = $aPCOptions['ldapfilter'];
+
+        $aLocalPCFields =  array(
+            'primary_key' => 'objectsid',
+            'name' => 'name',
+            'dn' => 'distinguishedname',
+            'osfamily_id' => 'operatingsystem',
+            'osversion_id' => 'operatingsystemversion',
+            'move2production' =>  'whencreated',
+        );
+
+        $this->aPCFields = array_merge($aLocalPCFields, Utils::GetConfigurationValue('pc_fields', array('primary_key' => 'objectsid')));
         $this->aPCs = array();
         $this->idx = 0;
 
@@ -114,7 +143,7 @@ class iTopPCLDAPCollector extends LDAPCollector
     }
 
     /**
-     * Helper method to extract the OSFamily information from the VirtualMachine object
+     * Helper method to extract the OSFamily information from the PC object
      * according to the 'os_family_mapping' mapping taken from the configuration
      * @param String $sRawValue
      * @return string The mapped OS Family or an empty string if nothing matches the extraction rules
@@ -130,7 +159,7 @@ class iTopPCLDAPCollector extends LDAPCollector
     }
 
     /**
-     * Helper method to extract the Version information from the VirtualMachine object
+     * Helper method to extract the Version information from the PC object
      * according to the 'os_version_mapping' mapping taken from the configuration
      * @param String $sRawValue
      * @return string The mapped OS Version or the original value if nothing matches the extraction rules
@@ -141,6 +170,22 @@ class iTopPCLDAPCollector extends LDAPCollector
             self::$oOSVersionMappings =  new MappingTable('os_version_mapping');
         }
         $value = self::$oOSVersionMappings->MapValue($sRawValue, $sRawValue); // Keep the raw value by default
+
+        return $value;
+    }
+
+    /**
+     * Helper method to extract the status information from the PC object
+     * according to the 'status_mapping' mapping taken from the configuration
+     * @param String $sRawValue
+     * @return string The mapped OS Version or the original value if nothing matches the extraction rules
+     */
+    static public function GetStatus($sRawValue)
+    {
+        if (self::$oStatusMappings === null) {
+            self::$oStatusMappings =  new MappingTable('status_mapping');
+        }
+        $value = self::$oStatusMappings->MapValue($sRawValue, $sRawValue); // Keep the raw value by default
 
         return $value;
     }
@@ -178,8 +223,19 @@ class iTopPCLDAPCollector extends LDAPCollector
                     $aValues[$sFieldCode] = $sFieldValue;
                 }
 
-                if (isset($aValues['move2production'])) {
-                    $aValues['move2production'] = $this->FormatDate($aValues['move2production']);
+                // Process mapping of status from dn
+                if (isset($aValues['dn'])) {
+                    $sStatus = static::GetStatus($aValues['dn']);
+                    $aValues['status'] = $sStatus;
+                    unset($aValues['dn']);
+                }
+
+                if ($this->sSynchronizeMove2Production == "yes") {
+                    if (isset($aValues['move2production'])) {
+                        $aValues['move2production'] = $this->FormatDate($aValues['move2production']);
+                    }
+                } else {
+                    unset($aValues['move2production']);
                 }
 
                 $this->aPCs[] = $aValues;
