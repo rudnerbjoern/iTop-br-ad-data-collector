@@ -1,5 +1,7 @@
 <?php
 
+require_once(APPROOT . 'collectors/src/LDAPCollector.class.inc.php');
+
 /**
  * Class to collect PCs from active directory and process information for iTop
  */
@@ -113,11 +115,6 @@ class iTopPCLDAPCollector extends LDAPCollector
     public function AttributeIsOptional($sAttCode)
     {
         if (in_array($sAttCode, array(
-            'brand_id',
-            'model_id',
-            'description',
-            'business_criticity',
-            'location_id',
             'bcm_rpo',
             'bcm_rto',
             'bcm_mtd',
@@ -132,7 +129,6 @@ class iTopPCLDAPCollector extends LDAPCollector
             'patchreboot_id',
             'backupmethod',
             'backupdescription',
-            'tickets_list',
             'costcenter_id',
             'workstation_id'
         ))) return true;
