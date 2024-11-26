@@ -13,6 +13,20 @@
 	<ldappassword>password</ldappassword>
 	<page_size>500</page_size>
 
+	<collectors_launch_sequence type="array">
+		<collector>
+			<name>iTopPCLDAPCollector</name>
+			<enable>yes</enable>
+			<rank>1</rank>
+		</collector>
+	</collectors_launch_sequence>
+
+	<iTopPCLDAPCollector>
+		<nullified_attributes type="array">
+			<attribute>type</attribute>
+		</nullified_attributes>
+	</iTopPCLDAPCollector>
+
 	<!-- Parameters for PC synchronization -->
 	<pc_options type="hash">
 		<ldapdn>DC=company,DC=com</ldapdn>

@@ -1,9 +1,8 @@
 <?php
 
-require_once(APPROOT . 'collectors/src/LDAPCollector.class.inc.php');
-require_once(APPROOT . 'collectors/src/iTopPCLDAPCollector.class.inc.php');
+// Initialize collection plan
+require_once(APPROOT . 'collectors/src/LDAPCollectionPlan.class.inc.php');
+require_once(APPROOT . 'core/orchestrator.class.inc.php');
 
 Orchestrator::AddRequirement('1.0.0', 'ldap'); // LDAP support is required to run this collector
-
-$iRank = 1;
-Orchestrator::AddCollector($iRank++, iTopPCLDAPCollector::class);
+Orchestrator::UseCollectionPlan('LDAPCollectionPlan');
