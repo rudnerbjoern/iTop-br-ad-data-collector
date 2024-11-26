@@ -32,7 +32,7 @@
 	<!-- this mapping is applied to the value from distinguishedName to extract the type of the PC-->
 	<type_mapping type="array">
 		<pattern>/laptop/laptop</pattern>
-		<pattern>/desktop/notebook</pattern>
+		<pattern>/desktop/desktop</pattern>
 	</type_mapping>
 
 	<os_family_mapping type="array">

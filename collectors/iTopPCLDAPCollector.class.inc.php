@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class to collect PCs from active directory and process information for iTop
+ */
 class iTopPCLDAPCollector extends LDAPCollector
 {
 
@@ -30,13 +33,13 @@ class iTopPCLDAPCollector extends LDAPCollector
      */
     static protected $oTypeMappings = null;
 
-    protected $sLDAPDN;
-    protected $sLDAPFilter;
-    protected $sSynchronizeMove2Production;
-    protected $aPCFields;
-    protected $aPCDefaults;
+    protected string $sLDAPDN;
+    protected string $sLDAPFilter;
+    protected string $sSynchronizeMove2Production;
+    protected array $aPCFields;
+    protected array $aPCDefaults;
 
-    protected $aPCs;
+    protected array $aPCs;
 
     public function __construct()
     {
@@ -47,22 +50,23 @@ class iTopPCLDAPCollector extends LDAPCollector
             'synchronize_move2production' => 'no',
             'default_org_id' => 'Demo',
             'default_status' => 'production',
-            'deafult_type' => '<NULL>',
+            'default_type' => '<NULL>',
             'ldapdn' => 'DC=company,DC=com',
             'ldapfilter' => '(&(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))',
         ];
         $aPCOptions = Utils::GetConfigurationValue('pc_options', []);
 
-        // Konfigurationswerte abrufen und mit Standardwerten kombinieren
+        // Combine defaults with configuration
         $aPCOptions = array_merge($aLocalPCDefaults, $aPCOptions);
 
-        // Attribute direkt setzen
         $this->sSynchronizeMove2Production = $aPCOptions['synchronize_move2production'];
+
         $this->aPCDefaults = [
             'org_id' => $aPCOptions['default_org_id'],
             'status' => $aPCOptions['default_status'],
             'type' => $aPCOptions['default_type'],
         ];
+
         $this->sLDAPDN = $aPCOptions['ldapdn'];
         $this->sLDAPFilter = $aPCOptions['ldapfilter'];
 
@@ -105,7 +109,7 @@ class iTopPCLDAPCollector extends LDAPCollector
         Utils::Log(LOG_DEBUG, "PCs: Mapping of the fields:\n$sMapping");
     }
 
-    /*
+
     public function AttributeIsOptional($sAttCode)
     {
         if (in_array($sAttCode, array(
@@ -135,9 +139,14 @@ class iTopPCLDAPCollector extends LDAPCollector
 
         return parent::AttributeIsOptional($sAttCode);
     }
-*/
 
-    protected function GetData()
+
+    /**
+     * Perform the LDAP search and receive all data
+     *
+     * @return array
+     */
+    protected function GetData(): array
     {
         $aAttributes = array_values($this->aPCFields);
         $aList = $this->Search($this->sLDAPDN, $this->sLDAPFilter, $aAttributes);
@@ -155,7 +164,7 @@ class iTopPCLDAPCollector extends LDAPCollector
      * @param String $sRawValue
      * @return string The mapped OS Family or an empty string if nothing matches the extraction rules
      */
-    static public function GetOSFamily($sRawValue)
+    static public function GetOSFamily(string $sRawValue): string
     {
         if (self::$oOSFamilyMappings === null) {
             self::$oOSFamilyMappings =  new MappingTable('os_family_mapping');
@@ -168,10 +177,10 @@ class iTopPCLDAPCollector extends LDAPCollector
     /**
      * Helper method to extract the Version information from the PC object
      * according to the 'os_version_mapping' mapping taken from the configuration
-     * @param String $sRawValue
+     * @param string $sRawValue
      * @return string The mapped OS Version or the original value if nothing matches the extraction rules
      */
-    static public function GetOSVersion($sRawValue)
+    static public function GetOSVersion(string $sRawValue): string
     {
         if (self::$oOSVersionMappings === null) {
             self::$oOSVersionMappings =  new MappingTable('os_version_mapping');
@@ -184,10 +193,10 @@ class iTopPCLDAPCollector extends LDAPCollector
     /**
      * Helper method to extract the status information from the PC object
      * according to the 'status_mapping' mapping taken from the configuration
-     * @param String $sRawValue
-     * @return string The mapped OS Version or the original value if nothing matches the extraction rules
+     * @param string    $sRawValue
+     * @return string   The mapped OS Version or the original value if nothing matches the extraction rules
      */
-    static public function GetStatus($sRawValue)
+    static public function GetStatus(string $sRawValue): string
     {
         if (self::$oStatusMappings === null) {
             self::$oStatusMappings =  new MappingTable('status_mapping');
@@ -200,10 +209,10 @@ class iTopPCLDAPCollector extends LDAPCollector
     /**
      * Helper method to extract the type information from the PC object
      * according to the 'type_mapping' mapping taken from the configuration
-     * @param String $sRawValue
+     * @param string $sRawValue
      * @return string The mapped OS Version or the original value if nothing matches the extraction rules
      */
-    static public function GetPCType($sRawValue)
+    static public function GetPCType(string $sRawValue): string
     {
         if (self::$oTypeMappings === null) {
             self::$oTypeMappings =  new MappingTable('type_mapping');
@@ -291,16 +300,16 @@ class iTopPCLDAPCollector extends LDAPCollector
                 $aData['osversion_id'] = static::GetOSVersion($aData['osversion_id'], '');
             }
 
-
             return $aData;
         }
         return false;
     }
 
-
-
-
-
+    /**
+     * Undocumented function
+     *
+     * @return boolean
+     */
     protected function MustProcessBeforeSynchro()
     {
         // We must reprocess the CSV data obtained from ad
