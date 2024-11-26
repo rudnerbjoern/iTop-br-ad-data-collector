@@ -44,7 +44,7 @@
           %2$s will be replaced by the first match group, if any group is defined in the RegExpr
           %3$s will be replaced by the second matched group, etc...
     -->
-		<pattern>/macOS/MacOS</pattern>
+		<pattern>/macOS/macOS</pattern>
 		<pattern>/Microsoft Windows/Windows</pattern>
 		<pattern>/Windows XP Professional/Windows</pattern>
 		<pattern>/Windows 7 (Pro|Enterprise|Business)/Windows</pattern>
@@ -54,12 +54,15 @@
 	</os_family_mapping>
 
 	<os_version_mapping type="array">
-		<pattern>/5.1 \(2600\)/Windows XP, Service Pack 3</pattern>
-		<pattern>/6.1 \(7601\)/Windows 7, Service Pack 1</pattern>
-		<pattern>/5.1 \(2600\)/Windows XP, Service Pack 3</pattern>
-		<pattern>/6.1 \(7601\)/Windows 7, Service Pack 1</pattern>
-		<pattern>/10.0 \(1\d+\)/Windows 10</pattern>
-		<pattern>/10.0 \(2\d+\)/Windows 11</pattern>
+		<pattern>/^13\.1/Ventura 13.1</pattern>
+		<pattern>/^14\.4/Sonoma 14.4</pattern>
+		<pattern>/^14\.5/Sonoma 14.5</pattern>
+		<pattern>/^5\.1 \(2600\)/Windows XP, Service Pack 3</pattern>
+		<pattern>/^6\.1 \(7601\)/Windows 7, Service Pack 1</pattern>
+		<pattern>/^5\.1 \(2600\)/Windows XP, Service Pack 3</pattern>
+		<pattern>/^6\.1 \(7601\)/Windows 7, Service Pack 1</pattern>
+		<pattern>/^10\.0 \(1\d+\)/Windows 10</pattern>
+		<pattern>/^10\.0 \(2\d+\)/Windows 11</pattern>
 		<pattern>/.*/%1$s</pattern>
 	</os_version_mapping>
 
