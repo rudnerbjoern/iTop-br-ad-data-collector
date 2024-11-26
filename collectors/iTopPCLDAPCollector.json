@@ -95,9 +95,9 @@
         },
         {
             "attcode": "type",
-            "update": "0",
+            "update": "1",
             "reconcile": "0",
-            "update_policy": "master_unlocked",
+            "update_policy": "write_if_empty",
             "finalclass": "SynchroAttribute"
         },
         {

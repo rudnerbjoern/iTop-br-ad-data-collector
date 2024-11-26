@@ -25,6 +25,11 @@ class iTopPCLDAPCollector extends LDAPCollector
      */
     static protected $oStatusMappings = null;
 
+    /**
+     * @var MappingTable Mapping table for PC type
+     */
+    static protected $oTypeMappings = null;
+
     protected $sLDAPDN;
     protected $sLDAPFilter;
     protected $sSynchronizeMove2Production;
@@ -42,6 +47,7 @@ class iTopPCLDAPCollector extends LDAPCollector
             'synchronize_move2production' => 'no',
             'default_org_id' => 'Demo',
             'default_status' => 'production',
+            'deafult_type' => '<NULL>',
             'ldapdn' => 'DC=company,DC=com',
             'ldapfilter' => '(&(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))',
         ];
@@ -55,6 +61,7 @@ class iTopPCLDAPCollector extends LDAPCollector
         $this->aPCDefaults = [
             'org_id' => $aPCOptions['default_org_id'],
             'status' => $aPCOptions['default_status'],
+            'type' => $aPCOptions['default_type'],
         ];
         $this->sLDAPDN = $aPCOptions['ldapdn'];
         $this->sLDAPFilter = $aPCOptions['ldapfilter'];
@@ -190,6 +197,22 @@ class iTopPCLDAPCollector extends LDAPCollector
         return $value;
     }
 
+    /**
+     * Helper method to extract the type information from the PC object
+     * according to the 'type_mapping' mapping taken from the configuration
+     * @param String $sRawValue
+     * @return string The mapped OS Version or the original value if nothing matches the extraction rules
+     */
+    static public function GetPCType($sRawValue)
+    {
+        if (self::$oTypeMappings === null) {
+            self::$oTypeMappings =  new MappingTable('type_mapping');
+        }
+        $value = self::$oTypeMappings->MapValue($sRawValue, $sRawValue); // Keep the raw value by default
+
+        return $value;
+    }
+
     public function Prepare()
     {
         if (! $aData = $this->GetData()) return false;
@@ -226,9 +249,21 @@ class iTopPCLDAPCollector extends LDAPCollector
                 // Process mapping of status from dn
                 if (isset($aValues['dn'])) {
                     $sStatus = static::GetStatus($aValues['dn']);
-                    $aValues['status'] = $sStatus;
-                    unset($aValues['dn']);
+                    if ($sStatus !== $aValues['dn']) {
+                        $aValues['status'] = $sStatus;
+                    }
                 }
+
+                // Process mapping of type from dn
+                if (isset($aValues['dn'])) {
+                    $sPCType = static::GetPCType($aValues['dn']);
+                    if ($sPCType !== $aValues['dn']) {
+                        $aValues['type'] = $sPCType;
+                    }
+                }
+
+                // remove field dn
+                unset($aValues['dn']);
 
                 if ($this->sSynchronizeMove2Production == "yes") {
                     if (isset($aValues['move2production'])) {

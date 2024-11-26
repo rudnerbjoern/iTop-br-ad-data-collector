@@ -1,37 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Default values for parameters. Do NOT alter this file, use params.local.xml instead -->
 <parameters>
-	<!--  NOTE: ldaphost and ldapport are deprecated in favor of ldapuri -->
-	<ldapuri></ldapuri>
-	<!--<ldapdn>DC=company,DC=com</ldapdn>-->
+
+	<itop_url>https://localhost/iTop</itop_url>
+	<itop_login>admin</itop_login>
+	<itop_password>admin</itop_password>
+	<itop_token />
+	<itop_login_mode />
+
+	<ldapuri>ldaps://ldapserver:689</ldapuri>
 	<ldaplogin>CN=ITOP-LDAP,DC=company,DC=com</ldaplogin>
 	<ldappassword>password</ldappassword>
 	<page_size>500</page_size>
 
-
-	<!--  Mapping between LDAP fields and iTop PC's object fields -->
-	<pc_fields>
-		<primary_key>objectsid</primary_key>
-		<name>name</name>
-		<osfamily_id>operatingsystem</osfamily_id>
-		<osversion_id>operatingsystemversion</osversion_id>
-		<move2production>whencreated</move2production>
-	</pc_fields>
-
+	<!-- Parameters for PC synchronization -->
 	<pc_options type="hash">
-		<!-- Parameters for PC synchronization -->
 		<ldapdn>DC=company,DC=com</ldapdn>
 		<ldapfilter>(&amp;(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))</ldapfilter>
 		<!-- use the value of whenCreated as move2production in iTop -->
 		<synchronize_move2production>yes</synchronize_move2production>
 		<default_org_id>Demo</default_org_id>
 		<default_status>production</default_status>
+		<default_type>&lt;NULL&gt;</default_type>
 	</pc_options>
 
 	<!-- this mapping is applied to the value from distinguishedName to extract the status of the PC-->
 	<status_mapping type="array">
 		<pattern>/.*/production</pattern>
 	</status_mapping>
+
+	<!-- this mapping is applied to the value from distinguishedName to extract the type of the PC-->
+	<type_mapping type="array">
+		<pattern>/laptop/laptop</pattern>
+		<pattern>/desktop/notebook</pattern>
+	</type_mapping>
 
 	<os_family_mapping type="array">
 		<!-- Syntax /pattern/replacement where:
@@ -50,27 +52,14 @@
 		<pattern>/Windows 11 (Pro|Enterprise|Business)/Windows</pattern>
 		<pattern>/.*/%1$s</pattern>
 	</os_family_mapping>
+
 	<os_version_mapping type="array">
-		<!-- Syntax /pattern/replacement where:
-      any delimiter can be used (not only /) but the delimiter cannot be present in the "replacement" string
-      pattern is a RegExpr pattern
-      replacement is a sprintf string in which:
-          %1$s will be replaced by the whole matched text,
-          %2$s will be replaced by the first match group, if any group is defined in the RegExpr
-          %3$s will be replaced by the second matched group, etc...
-    -->
 		<pattern>/5.1 \(2600\)/Windows XP, Service Pack 3</pattern>
 		<pattern>/6.1 \(7601\)/Windows 7, Service Pack 1</pattern>
-		<pattern>/10.0 \(14393\)/Windows 10</pattern>
-		<pattern>/10.0 \(15063\)/Windows 10</pattern>
-		<pattern>/10.0 \(16299\)/Windows 10</pattern>
-		<pattern>/10.0 \(17763\)/Windows 10</pattern>
-		<pattern>/10.0 \(18362\)/Windows 10</pattern>
-		<pattern>/10.0 \(18363\)/Windows 10</pattern>
-		<pattern>/10.0 \(19\d+\)/Windows 10</pattern>
-		<pattern>/10.0 \(22621\)/Windows 11</pattern>
-		<pattern>/10.0 \(22631\)/Windows 11</pattern>
-		<pattern>/10.0 \(26100\)/Windows 11</pattern>
+		<pattern>/5.1 \(2600\)/Windows XP, Service Pack 3</pattern>
+		<pattern>/6.1 \(7601\)/Windows 7, Service Pack 1</pattern>
+		<pattern>/10.0 \(1\d+\)/Windows 10</pattern>
+		<pattern>/10.0 \(2\d+\)/Windows 11</pattern>
 		<pattern>/.*/%1$s</pattern>
 	</os_version_mapping>
 
