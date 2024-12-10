@@ -111,27 +111,38 @@ class iTopPCLDAPCollector extends LDAPCollector
         Utils::Log(LOG_DEBUG, "PCs: Mapping of the fields:\n$sMapping");
     }
 
-
-    public function AttributeIsOptional($sAttCode)
+    /**
+     * @inheritdoc
+     */
+    public function AttributeIsOptional($sAttCode): bool
     {
-        if (in_array($sAttCode, array(
-            'bcm_rpo',
-            'bcm_rto',
-            'bcm_mtd',
-            'rm_confidentiality',
-            'rm_integrity',
-            'rm_availability',
-            'rm_authenticity',
-            'rm_nonrepudiation',
-            'system_landscape',
-            'patchgroup_id',
-            'patchmethod_id',
-            'patchreboot_id',
-            'backupmethod',
-            'backupdescription',
-            'costcenter_id',
-            'workstation_id'
-        ))) return true;
+        // System Landscape is optional
+        if ($sAttCode == 'system_landscape') return true;
+
+        // Cost Center is optional
+        if ($sAttCode == 'costcenter_id') return true;
+
+        //  Backup Management is optional
+        if ($sAttCode == 'backupmethod') return true;
+        if ($sAttCode == 'backupdescription') return true;
+
+        // Patch Management is optional
+        if ($sAttCode == 'patchmethod_id') return true;
+        if ($sAttCode == 'patchgroup_id') return true;
+        if ($sAttCode == 'patchreboot_id') return true;
+
+        // Risk Management is optional
+        if ($sAttCode == 'rm_confidentiality') return true;
+        if ($sAttCode == 'rm_integrity') return true;
+        if ($sAttCode == 'rm_availability') return true;
+        if ($sAttCode == 'rm_authenticity') return true;
+        if ($sAttCode == 'rm_nonrepudiation') return true;
+        if ($sAttCode == 'bcm_rto') return true;
+        if ($sAttCode == 'bcm_rpo') return true;
+        if ($sAttCode == 'bcm_mtd') return true;
+
+        // Workstation ID is optional
+        if ($sAttCode == 'workstation_id') return true;
 
         return parent::AttributeIsOptional($sAttCode);
     }
