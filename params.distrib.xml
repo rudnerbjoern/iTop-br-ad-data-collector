@@ -33,6 +33,7 @@
 		<ldapfilter>(&amp;(objectClass=computer)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))</ldapfilter>
 		<!-- use the value of whenCreated as move2production in iTop -->
 		<synchronize_move2production>yes</synchronize_move2production>
+<ignore_pattern>/.*srv.*/</ignore_pattern>
 		<default_org_id>Demo</default_org_id>
 		<default_status>production</default_status>
 		<default_type>&lt;NULL&gt;</default_type>

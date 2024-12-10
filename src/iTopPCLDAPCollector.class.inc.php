@@ -38,6 +38,7 @@ class iTopPCLDAPCollector extends LDAPCollector
     protected string $sLDAPDN;
     protected string $sLDAPFilter;
     protected string $sSynchronizeMove2Production;
+    protected string $sIgnorePattern;
     protected array $aPCFields;
     protected array $aPCDefaults;
 
@@ -50,6 +51,7 @@ class iTopPCLDAPCollector extends LDAPCollector
         // set the defaults
         $aLocalPCDefaults = [
             'synchronize_move2production' => 'no',
+            'ignore_pattern' => '',
             'default_org_id' => 'Demo',
             'default_status' => 'production',
             'default_type' => '<NULL>',
@@ -62,6 +64,12 @@ class iTopPCLDAPCollector extends LDAPCollector
         $aPCOptions = array_merge($aLocalPCDefaults, $aPCOptions);
 
         $this->sSynchronizeMove2Production = $aPCOptions['synchronize_move2production'];
+        $this->sIgnorePattern = $aPCOptions['ignore_pattern'];
+
+        if (@preg_match($this->sIgnorePattern, '') === false) {
+            Utils::Log(LOG_ERR, "Configuration for ignore_pattern '{$this->sIgnorePattern}' is no valid preg_match pattern.");
+            exit;
+        }
 
         $this->aPCDefaults = [
             'org_id' => $aPCOptions['default_org_id'],
@@ -234,6 +242,16 @@ class iTopPCLDAPCollector extends LDAPCollector
         if (! $aData = $this->GetData()) return false;
 
         foreach ($aData as $aPC) {
+
+            $sPCName = isset($aPC['name']) && is_array($aPC['name']) ? ($aPC['name'][0] ?? '') : '';
+
+            //check if PC name matches ignore pattern
+            if (!empty($sPCName) && (preg_match($this->sIgnorePattern, $sPCName))) {
+                Utils::Log(LOG_DEBUG, "PC Name $sPCName matches ignore pattern.");
+                // ignore this entry
+                continue;
+            }
+
             if (isset($aPC[$this->aPCFields['primary_key']][0]) && $aPC[$this->aPCFields['primary_key']][0] != "") {
                 $aValues = array();
 
@@ -254,9 +272,9 @@ class iTopPCLDAPCollector extends LDAPCollector
 
                 // Then read the actual values (if any)
                 foreach ($this->aPCFields as $sFieldCode => $sLDAPAttribute) {
-                    if ($sFieldCode == 'primary_key') continue; // Already processed, must be the first column
+                    if ($sFieldCode === 'primary_key') continue; // Already processed, must be the first column
 
-                    $sDefaultValue = isset($this->aPCDefaults[$sFieldCode]) ? $this->aPCDefaults[$sFieldCode] : '';
+                    $sDefaultValue = $this->aPCDefaults[$sFieldCode] ?? '';
                     $sFieldValue = isset($aPC[$sLDAPAttribute][0]) ? $aPC[$sLDAPAttribute][0] : $sDefaultValue;
 
                     $aValues[$sFieldCode] = $sFieldValue;
