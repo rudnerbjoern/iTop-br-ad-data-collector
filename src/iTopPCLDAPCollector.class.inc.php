@@ -38,6 +38,7 @@ class iTopPCLDAPCollector extends LDAPCollector
     protected string $sLDAPDN;
     protected string $sLDAPFilter;
     protected string $sSynchronizeMove2Production;
+    protected string $sIgnorePattern;
     protected array $aPCFields;
     protected array $aPCDefaults;
 
@@ -50,6 +51,7 @@ class iTopPCLDAPCollector extends LDAPCollector
         // set the defaults
         $aLocalPCDefaults = [
             'synchronize_move2production' => 'no',
+            'ignore_pattern' => '',
             'default_org_id' => 'Demo',
             'default_status' => 'production',
             'default_type' => '<NULL>',
@@ -62,6 +64,12 @@ class iTopPCLDAPCollector extends LDAPCollector
         $aPCOptions = array_merge($aLocalPCDefaults, $aPCOptions);
 
         $this->sSynchronizeMove2Production = $aPCOptions['synchronize_move2production'];
+        $this->sIgnorePattern = $aPCOptions['ignore_pattern'];
+
+        if (@preg_match($this->sIgnorePattern, '') === false) {
+            Utils::Log(LOG_ERR, "Configuration for ignore_pattern '{$this->sIgnorePattern}' is no valid preg_match pattern.");
+            exit;
+        }
 
         $this->aPCDefaults = [
             'org_id' => $aPCOptions['default_org_id'],
@@ -111,27 +119,38 @@ class iTopPCLDAPCollector extends LDAPCollector
         Utils::Log(LOG_DEBUG, "PCs: Mapping of the fields:\n$sMapping");
     }
 
-
-    public function AttributeIsOptional($sAttCode)
+    /**
+     * @inheritdoc
+     */
+    public function AttributeIsOptional($sAttCode): bool
     {
-        if (in_array($sAttCode, array(
-            'bcm_rpo',
-            'bcm_rto',
-            'bcm_mtd',
-            'rm_confidentiality',
-            'rm_integrity',
-            'rm_availability',
-            'rm_authenticity',
-            'rm_nonrepudiation',
-            'system_landscape',
-            'patchgroup_id',
-            'patchmethod_id',
-            'patchreboot_id',
-            'backupmethod',
-            'backupdescription',
-            'costcenter_id',
-            'workstation_id'
-        ))) return true;
+        // System Landscape is optional
+        if ($sAttCode == 'system_landscape') return true;
+
+        // Cost Center is optional
+        if ($sAttCode == 'costcenter_id') return true;
+
+        //  Backup Management is optional
+        if ($sAttCode == 'backupmethod') return true;
+        if ($sAttCode == 'backupdescription') return true;
+
+        // Patch Management is optional
+        if ($sAttCode == 'patchmethod_id') return true;
+        if ($sAttCode == 'patchgroup_id') return true;
+        if ($sAttCode == 'patchreboot_id') return true;
+
+        // Risk Management is optional
+        if ($sAttCode == 'rm_confidentiality') return true;
+        if ($sAttCode == 'rm_integrity') return true;
+        if ($sAttCode == 'rm_availability') return true;
+        if ($sAttCode == 'rm_authenticity') return true;
+        if ($sAttCode == 'rm_nonrepudiation') return true;
+        if ($sAttCode == 'bcm_rto') return true;
+        if ($sAttCode == 'bcm_rpo') return true;
+        if ($sAttCode == 'bcm_mtd') return true;
+
+        // Workstation ID is optional
+        if ($sAttCode == 'workstation_id') return true;
 
         return parent::AttributeIsOptional($sAttCode);
     }
@@ -223,6 +242,16 @@ class iTopPCLDAPCollector extends LDAPCollector
         if (! $aData = $this->GetData()) return false;
 
         foreach ($aData as $aPC) {
+
+            $sPCName = isset($aPC['name']) && is_array($aPC['name']) ? ($aPC['name'][0] ?? '') : '';
+
+            //check if PC name matches ignore pattern
+            if (!empty($sPCName) && (preg_match($this->sIgnorePattern, $sPCName))) {
+                Utils::Log(LOG_DEBUG, "PC Name $sPCName matches ignore pattern.");
+                // ignore this entry
+                continue;
+            }
+
             if (isset($aPC[$this->aPCFields['primary_key']][0]) && $aPC[$this->aPCFields['primary_key']][0] != "") {
                 $aValues = array();
 
@@ -243,9 +272,9 @@ class iTopPCLDAPCollector extends LDAPCollector
 
                 // Then read the actual values (if any)
                 foreach ($this->aPCFields as $sFieldCode => $sLDAPAttribute) {
-                    if ($sFieldCode == 'primary_key') continue; // Already processed, must be the first column
+                    if ($sFieldCode === 'primary_key') continue; // Already processed, must be the first column
 
-                    $sDefaultValue = isset($this->aPCDefaults[$sFieldCode]) ? $this->aPCDefaults[$sFieldCode] : '';
+                    $sDefaultValue = $this->aPCDefaults[$sFieldCode] ?? '';
                     $sFieldValue = isset($aPC[$sLDAPAttribute][0]) ? $aPC[$sLDAPAttribute][0] : $sDefaultValue;
 
                     $aValues[$sFieldCode] = $sFieldValue;
